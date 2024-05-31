@@ -1,0 +1,62 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background-color: rgb(245, 245, 245);
+}
+.name {
+    font-family: 'Courier New', monospace;
+    margin: 0.7rem;
+    font-size: 3.5rem;
+    font-weight: bold;
+}
+.navbar {
+    margin-top: -0.5rem;
+}
+
+.navbar a {
+    font-family: system-ui;
+    text-decoration: none;
+    color: black;
+    font-size: 1.75rem;
+    font-weight: lighter;
+}
+.navbar a:hover {
+    color: silver;
+}
+.navbar a:not(:last-child)::after {
+    content: "|";
+    margin: 12px;
+    color: rgb(136, 136, 136);
+}
+
+.social-link {
+    display: inline-block;
+    margin-right: 12px;
+    position: relative;
+}
+.social-logo {
+    margin: 5px;
+    width: 40px; /* Adjust the width of the logos */
+    height: auto; /* Maintain aspect ratio */
+}
+
+.contact h4 {
+    font-size: 1.5rem;
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: left;
+    margin-left: 35%;
+    font-weight:500;
+    margin-top: 0rem;
+}
+.contact p {
+    margin-left: 35%;
+    margin-top: -1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+}
+
+.info {
+    margin-top: -1.7rem;
+}
