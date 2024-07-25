@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scorecard</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/river.css">
+    <script type="text/javascript" src="js/river.js"></script>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- TITLE + NAVBAR -->
+<div class="name">Evan Gossling</div>
+<div class="navbar">
+    <a href="/">home</a>
+    <a href="research.html">research</a>
+    <a href="publications.html">publications</a>
+    <a href="resume.html">resume</a>
+    <a href="other.html">other</a>
+    <!-- <a href="interests.html">interests</a> -->
+</div>
+<br>
+<hr width=60%; margin=auto; color="black">
+
+<h1>Setup Game</h2>
+<label for="playerName">Player Name:</label>
+<input type="text" id="playerName">
+<button onclick="addPlayerToGame()">Add Player</button>
+<button onclick="removePlayerFromGame()">Remove Player</button>
+<button onclick="startGame()">Start Game</button>
+<button onclick="startOver()">Start Over</button>
+
+<h1>Player List:</h3>
+<div id="players"></div>
+
+<h1>Game Board:</h3>
+<div class="board">
+    <table id="gameBoard" style="display: none;">
+        <thead id="gameBoardHeader"></thead>
+        <tbody id="gameBoardBody"></tbody>
+    </table>
+</div>
+
+<script>
+const game = new Game();
+
+function updatePlayerList() {
+    const playersDiv = document.getElementById("players");
+    playersDiv.innerHTML = ""; // Clear the list
+    game.players.forEach(player => {
+        let playerInfo = document.createElement("p");
+        playerInfo.innerHTML = `${player.name} with score ${player.score}`;
+        playersDiv.appendChild(playerInfo);
+    });
+}
+
+function addPlayerToGame() {
+    const playerName = document.getElementById("playerName").value;
+    if (playerName) {
+        const result = game.addPlayer(playerName);
+        if (result.success) {
+            updatePlayerList();
+            document.getElementById("playerName").value = "";
+        } else {
+            alert(result.message);
+        }
+    } else {
+        alert("Please enter a valid player name.");
+    }
+}
+
+function removePlayerFromGame() {
+    const playerName = document.getElementById("playerName").value;
+    if (game.players.some(player => player.name === playerName)) {
+        game.removePlayer(playerName);
+        updatePlayerList();
+        document.getElementById("playerName").value = "";
+    } else {
+        alert("Player not found.");
+    }
+}
+
+function startGame() {
+    if (game.players.length === 0) {
+        alert("Please add at least one player to start the game.");
+        return;
+    }
+
+    document.getElementById("gameBoard").style.display = "table";
+
+    const gameBoardHeader = document.getElementById("gameBoardHeader");
+    gameBoardHeader.innerHTML = ""; // Clear header
+
+    let headerRow = document.createElement("tr");
+    let roundHeader = document.createElement("th");
+    roundHeader.innerText = "Round";
+    headerRow.appendChild(roundHeader);
+
+    game.players.forEach(player => {
+        let playerHeader = document.createElement("th");
+        playerHeader.innerText = player.name;
+        headerRow.appendChild(playerHeader);
+    });
+
+    gameBoardHeader.appendChild(headerRow);
+
+    startNextRound();
+}
+
+function startNextRound() {
+    if (game.nextRound()) {
+        const currentRound = game.currentRound();
+        const gameBoardBody = document.getElementById("gameBoardBody");
+        const realRound = game.roundLabel();
+
+        let row = document.createElement("tr");
+        let roundCell = document.createElement("td");
+        roundCell.innerText = realRound;
+        row.appendChild(roundCell);
+
+        game.players.forEach(player => {
+            let betCell = document.createElement("td");
+            betCell.innerHTML = `
+                <input type="number" id="bet_${currentRound}_${player.id}" min="0" max="${realRound}" value="0">
+                <button onclick="placeBet(${player.id}, ${currentRound})">Place Bet</button>
+                <div id="result_${currentRound}_${player.id}"></div>
+            `;
+            row.appendChild(betCell);
+        });
+
+        gameBoardBody.appendChild(row);
+    } else {
+        alert("Game over!");
+    }
+}
+
+function placeBet(playerId, round) {
+    const betInput = document.getElementById(`bet_${round}_${playerId}`);
+    const bet = parseInt(betInput.value);
+
+    if (bet > round) {
+        alert(`Bet cannot be more than ${round}`);
+        return;
+    }
+
+    game.placeBet(playerId, bet);
+
+    const resultDiv = document.getElementById(`result_${round}_${playerId}`);
+    resultDiv.innerHTML = `
+        Bet: ${bet}
+        <button onclick="updateScore(${playerId}, ${round}, true)">Won</button>
+        <button onclick="updateScore(${playerId}, ${round}, false)">Lost</button>
+    `;
+
+    betInput.disabled = true;
+    betInput.nextElementSibling.disabled = true;
+}
+
+function updateScore(playerId, round, won) {
+    game.updateScore(playerId, won);
+
+    const player = game.players.find(p => p.id === playerId);
+    const resultDiv = document.getElementById(`result_${round}_${playerId}`);
+    resultDiv.innerHTML = `Score: ${player.score}`;
+
+    if (game.players.every(p => document.getElementById(`result_${round}_${p.id}`).innerHTML.includes("Score"))) {
+        startNextRound();
+    }
+    updatePlayerList();
+}
+
+function startOver() {
+    game.restart();
+    document.getElementById("gameBoardBody").innerHTML = ""; // Clear game board
+    document.getElementById("gameBoard").style.display = "none"; // Hide game board
+    const playersDiv = document.getElementById("players");
+    playersDiv.innerHTML = ""; // Clear the list
+    game.players.forEach(player => {
+        let playerInfo = document.createElement("p");
+        playerInfo.innerHTML = `${player.name} with score ${player.score}`;
+        playersDiv.appendChild(playerInfo);
+    });
+}
+</script>
+
+</body>
+</html>
