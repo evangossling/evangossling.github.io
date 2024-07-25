@@ -120,17 +120,16 @@ function startNextRound() {
     if (game.nextRound()) {
         const currentRound = game.currentRound();
         const gameBoardBody = document.getElementById("gameBoardBody");
-        const realRound = game.roundLabel();
 
         let row = document.createElement("tr");
         let roundCell = document.createElement("td");
-        roundCell.innerText = realRound;
+        roundCell.innerText = currentRound;
         row.appendChild(roundCell);
 
         game.players.forEach(player => {
             let betCell = document.createElement("td");
             betCell.innerHTML = `
-                <input type="number" id="bet_${currentRound}_${player.id}" min="0" max="${realRound}" value="0">
+                <input type="number" id="bet_${currentRound}_${player.id}" min="0" max="${currentRound}" value="0">
                 <button onclick="placeBet(${player.id}, ${currentRound})">Place Bet</button>
                 <div id="result_${currentRound}_${player.id}"></div>
             `;
@@ -142,6 +141,7 @@ function startNextRound() {
         alert("Game over!");
     }
 }
+
 
 function placeBet(playerId, round) {
     const betInput = document.getElementById(`bet_${round}_${playerId}`);
@@ -170,13 +170,25 @@ function updateScore(playerId, round, won) {
 
     const player = game.players.find(p => p.id === playerId);
     const resultDiv = document.getElementById(`result_${round}_${playerId}`);
-    resultDiv.innerHTML = `Score: ${player.score}`;
 
-    if (game.players.every(p => document.getElementById(`result_${round}_${p.id}`).innerHTML.includes("Score"))) {
+    // Set text color based on win/loss
+    resultDiv.innerHTML = `
+        Score: ${player.score}
+    `;
+    resultDiv.style.color = won ? 'green' : 'red';
+
+    // Check if all players have completed their results for the current round
+    const allResultsDone = game.players.every(p => {
+        const result = document.getElementById(`result_${round}_${p.id}`);
+        return result.innerHTML.includes("Score");
+    });
+
+    if (allResultsDone) {
         startNextRound();
     }
     updatePlayerList();
 }
+
 
 function startOver() {
     game.restart();
